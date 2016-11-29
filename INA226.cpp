@@ -5,6 +5,9 @@ Version: 1.0.0
 (c) 2014 Korneliusz Jarzebski
 www.jarzebski.pl
 
+Version: 1.0.1
+(c) 2016 Alex Simonetti  (aka AlxDroidDev)
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the version 3 GNU General Public License as
 published by the Free Software Foundation.
@@ -18,13 +21,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
+
 
 #include <Wire.h>
+
+#if defined(ARDUINO) && ARDUINO >= 100
+	#include <Arduino.h> 
+	#define I2C_READ	Wire.read
+	#define I2C_WRITE	Wire.write
+#else
+	#include <WProgram.h> 
+	#include <WConstants.h>
+	#define I2C_READ	Wire.receive
+	#define I2C_WRITE	Wire.send
+#endif
+
 
 #include "INA226.h"
 
@@ -286,11 +297,7 @@ int16_t INA226::readRegister16(uint8_t reg)
     int16_t value;
 
     Wire.beginTransmission(inaAddress);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
+    I2C_WRITE(reg);
     Wire.endTransmission();
 
     delay(1);
@@ -298,16 +305,11 @@ int16_t INA226::readRegister16(uint8_t reg)
     Wire.beginTransmission(inaAddress);
     Wire.requestFrom(inaAddress, 2);
     while(!Wire.available()) {};
-    #if ARDUINO >= 100
-        uint8_t vha = Wire.read();
-        uint8_t vla = Wire.read();
-    #else
-        uint8_t vha = Wire.receive();
-        uint8_t vla = Wire.receive();
-    #endif;
+    uint8_t vha = I2C_READ();
+    uint8_t vla = I2C_READ();    
     Wire.endTransmission();
 
-    value = vha << 8 | vla;
+    value = (vha << 8) | vla;
 
     return value;
 }
@@ -319,14 +321,8 @@ void INA226::writeRegister16(uint8_t reg, uint16_t val)
     val >>= 8;
 
     Wire.beginTransmission(inaAddress);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-        Wire.write((uint8_t)val);
-        Wire.write(vla);
-    #else
-        Wire.send(reg);
-        Wire.send((uint8_t)val);
-        Wire.send(vla);
-    #endif
+    I2C_WRITE(reg);
+    I2C_WRITE((uint8_t)val);
+    I2C_WRITE(vla);
     Wire.endTransmission();
 }
