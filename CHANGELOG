@@ -2,3 +2,9 @@ INA226 Arduino Library 1.0.0 / 08.04.2014
 ======================================================================
 
  * First release
+
+INA226 Arduino Library 1.0.1 / 29-11-2019
+======================================================================
+
+ * Forked from jarzebski's project on Github
+ * Changes to INA226.cpp to make code more streamlined
